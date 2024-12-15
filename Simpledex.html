@@ -6,6 +6,7 @@
   <title>SimpleDex</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
 </head>
 <body>
@@ -13,8 +14,9 @@
     <h1 class="text-left text-white">SimpleDex</h1>
     <div class="text-right mb-4">
       <button id="walletButton" class="btn btn-danger">Connect Wallet</button>
+      <button id="btn-disconnect" class="bg-green-600 px-4 py-2 rounded-lg text-lg font-medium hidden">Desconectar</button>
     </div>
-    <div id="walletInfo" class="d-none">
+    <div id="walletInfo" class="text-center  ">
       <p>Address: <span id="walletAddress"></span></p>
       <p>Network: <span id="walletNetwork"></span></p>
       <p>Balance: <span id="walletBalance"></span></p>
@@ -25,29 +27,24 @@
         <div class="card-body">
           <h5 class="card-title">Swap Tokens</h5>
           <div class="form-group">
-            <label for="swapAmount">Amount</label>
-            <input type="number" class="form-control" id="swapAmount" placeholder="Enter amount">
+            <label for="tokenAmount">Amount</label>
+            <input type="number" class="form-control" id="tokenAmount" placeholder="Enter amount">
           </div>
           <div class="form-group">
-            <label for="swapFromToken">From</label>
-            <select class="form-control" id="swapFromToken">
-              <option>Token A</option>
-              <option>Token B</option>
-            </select>
+              <!-- Selector de token -->
+        
+          <label for="tokenSelector">Selecciona el token:</label>
+          <select id="tokenSelector">
+              <option value="TokenA">Token A</option>
+              <option value="TokenB">Token B</option>
           </div>
-          <div class="form-group">
-            <label for="swapToToken">To</label>
-            <select class="form-control" id="swapToToken">
-              <option>Token B</option>
-              <option>Token A</option>
-            </select>
-          </div>
+          
           <div class="form-group">
             <label for="swapReceiveAmount">You Receive</label>
             <input type="number" class="form-control" id="swapReceiveAmount" placeholder="Amount received" readonly>
           </div>
           <button id="approveSwapButton" class="btn btn-warning">Approve</button>
-          <button id="swapButton" class="btn btn-success d-none">Swap</button>
+          <button id="swapTokens" class="btn btn-success">Swap</button>
         </div>
       </div>
       <!-- Tarjeta añadir liquidez -->
@@ -63,7 +60,8 @@
             <input type="number" class="form-control" id="liquidityTokenB" placeholder="Enter Token B amount">
           </div>
           <button id="approveLiquidityButton" class="btn btn-warning">Approve</button>
-          <button id="addLiquidityButton" class="btn btn-success d-none">Add Liquidity</button>
+          
+          <button id="addLiquidityButton" class="btn btn-success">Add Liquidity</button>
         </div>
       </div>
       <!-- Tarjeta Mintear -->
@@ -97,7 +95,7 @@
   <footer class="text-center mt-5 text-white">
     <p>&copy; 2024, Salvador Piccolini. Curso: EthKipu</p>
   </footer>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.min.js"></script>
+  
   <script src="scripts.js"></script>
 </body>
 </html>

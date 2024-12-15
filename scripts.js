@@ -24,7 +24,13 @@ async function initializeProvider() {
         console.log('MetaMask está instalado');
         provider = new ethers.providers.Web3Provider(window.ethereum);
         signer = provider.getSigner();
-        await window.ethereum.enable();
+        try {
+            await provider.send("eth_requestAccounts", []); // Solicitar acceso a las cuentas
+        } catch (error) {
+            console.error('Usuario rechazó la solicitud de conexión:', error);
+            alert('Por favor, permite el acceso a tu wallet.');
+            return;
+        }
 
         const [simpleDexABI, tokenAABI, tokenBABI] = await Promise.all([
             loadABI('./Abi/SimpleDex.json'),
@@ -95,37 +101,57 @@ async function removeLiquidity() {
         alert('Error al retirar liquidez');
     }
 }
+// Función para convertir el valor a unidades enteras con 18 decimales
+function toUnits(value) {
+    const decimalPlaces = 18;
+    return ethers.utils.parseUnits(value.toString(), decimalPlaces);
+}
 
+// Función para convertir de unidades enteras a valor decimal con 18 decimales
+function fromUnits(value) {
+    const decimalPlaces = 18;
+    return ethers.utils.formatUnits(value, decimalPlaces);
+}
 // Función para intercambiar tokens
 async function swapTokens() {
-    const swapAmount = document.getElementById('swapAmount').value;
-    const fromToken = document.getElementById('swapFromToken').value;
-    const toToken = document.getElementById('swapToToken').value;
+    const amount = document.getElementById('tokenAmount').value;
+    const selectedToken = document.getElementById('tokenSelector').value;
 
-    if (swapAmount <= 0) {
-        alert('Por favor ingresa una cantidad válida');
+    // Validar cantidad de tokens
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+        alert('Ingresa una cantidad válida de tokens.');
         return;
     }
 
-    const amountIn = ethers.utils.parseUnits(swapAmount, 18);
-
     try {
-        let tx;
-        if (fromToken === 'Token A' && toToken === 'Token B') {
-            // Aprobar Token A para el intercambio
-            await tokenA.approve(simpleDexAddress, amountIn);
-            tx = await simpleDex.swapTokenAForTokenB(amountIn);
-        } else if (fromToken === 'Token B' && toToken === 'Token A') {
-            // Aprobar Token B para el intercambio
-            await tokenB.approve(simpleDexAddress, amountIn);
-            tx = await simpleDex.swapTokenBForTokenA(amountIn);
+        // Convertir la cantidad a unidades enteras (multiplicado por 10^18)
+        const amountInUnits = toUnits(amount);
+
+        // Aprobar tokens
+        if (selectedToken === 'TokenA') {
+            const approveTx = await tokenA.approve(simpleDex.address, amountInUnits);
+            console.log('Aprobando tokens A...');
+            await approveTx.wait();
+            
+            // Realizar swap A por B
+            const swapTx = await simpleDex.swapAforB(amountInUnits);
+            console.log('Realizando swap A por B...');
+            await swapTx.wait();
+        } else if (selectedToken === 'TokenB') {
+            const approveTx = await tokenB.approve(simpleDex.address, amountInUnits);
+            console.log('Aprobando tokens B...');
+            await approveTx.wait();
+            
+            // Realizar swap B por A
+            const swapTx = await simpleDex.swapBforA(amountInUnits);
+            console.log('Realizando swap B por A...');
+            await swapTx.wait();
         }
 
-        await tx.wait();
-        alert('Intercambio exitoso');
-    } catch (error) {
-        console.error('Error al intercambiar tokens:', error);
-        alert('Error al intercambiar tokens');
+        alert('Swap completado exitosamente.');
+    } catch (err) {
+        console.error('Error en el swap:', err);
+        alert('Error al realizar el swap. Revisa la consola para más detalles.');
     }
 }
 
@@ -187,10 +213,12 @@ async function getTokenBBalance() {
 document.getElementById('walletButton').addEventListener('click', () => {
     initializeProvider();
 });
-
+document.getElementById('btn-disconnect').addEventListener('click', () => {
+    location.reload(); // Recargar la página para "desconectar"
+});
 // Funciones de interacción con el contrato
 document.getElementById('addLiquidityButton').addEventListener('click', addLiquidity);
-document.getElementById('swapButton').addEventListener('click', swapTokens);
+document.getElementById('swapTokens').addEventListener('click', swapTokens);
 document.getElementById('getPriceButton').addEventListener('click', getTokenPrice);
 document.getElementById('getTokenABalanceButton').addEventListener('click', getTokenABalance);
 document.getElementById('getTokenBBalanceButton').addEventListener('click', getTokenBBalance);
@@ -210,4 +238,8 @@ async function updateWalletInfo() {
     // Mostrar la sección de funciones
     document.getElementById('walletInfo').classList.remove('d-none');
     document.getElementById('walletButton').classList.add('d-none');
-}
+    document.getElementById('btn-disconnect').classList.remove('hidden');
+};
+document.getElementById('approveLiquidityButton').addEventListener('click', addLiquidity);
+
+

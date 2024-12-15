@@ -1,10 +1,14 @@
 /* Estilo general para la página */
 body {
+
   background-image: url(images/galaxy-6660782_1920.jpg); 
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
   font-family: Arial, sans-serif;
+  p{color: white;
+  font-weight: 600;
+  font-size: 20px;}
 }
 
 /* Estilo para las tarjetas */
@@ -64,4 +68,7 @@ button:hover {
   .card {
     width: 100%;
   }
+}
+.hidden{
+  display: none
 }
